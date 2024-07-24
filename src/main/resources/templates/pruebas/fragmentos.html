@@ -154,9 +154,33 @@
                         </div>
                     </form>
                 </div>
+                <div class="col-md-3">
+                    <form method="POST" th:action="@{/pruebas/queryExistencias}" 
+                          class="was-validated">
+                        <div class="card">                            
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="existenciasInf">[[#{pruebas.existencias.inferior}]]</label>
+                                    <input type="number" class="form-control" 
+                                           th:value="${existenciasInf}"
+                                           th:name="existenciasInf" required="true"/>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="existenciasSup">[[#{pruebas.existencias.superior}]]</label>
+                                    <input type="number" class="form-control" 
+                                           th:value="${existenciasSup}"
+                                           th:name="existenciasSup" required="true"/>
+                                </div>
+                            </div>
+                            <div class="card-footer text-center">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-check"></i> [[#{pruebas.existencias}]]
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </section> 
-
-
+        </section>
     </body>
 </html>
