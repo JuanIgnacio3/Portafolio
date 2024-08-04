@@ -1,5 +1,8 @@
 package com.tiendaIg;
 
+import com.tiendaIg.domain.RequestMatcher;
+import com.tiendaIg.service.RequestMatcherService;
+import java.util.List;
 import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -64,7 +67,7 @@ public class ProjectConfig implements WebMvcConfigurer {
         registry.addViewController("/login").setViewName("login");
         registry.addViewController("/registro/nuevo").setViewName("/registro/nuevo");
     }
-    
+
 //    /* El siguiente método se utiliza para completar la clase no es 
 //    realmente funcional, la próxima semana se reemplaza con usuarios de BD */
 //    @Bean
@@ -86,7 +89,6 @@ public class ProjectConfig implements WebMvcConfigurer {
 //                .build();
 //        return new InMemoryUserDetailsManager(user, sales, admin);
 //    }
-    
     @Autowired
     private UserDetailsService userDetailsService;
 
@@ -95,36 +97,66 @@ public class ProjectConfig implements WebMvcConfigurer {
         build.userDetailsService(userDetailsService).passwordEncoder(new BCryptPasswordEncoder());
     }
 
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        http
+//                .authorizeHttpRequests((request) -> request
+//                .requestMatchers("/", "/index", "/errores/**", "/error", "/error/**",
+//                        "/carrito/**", "/pruebas/**", "/reportes/**",
+//                        "/registro/**", "/js/**", "/webjars/**")
+//                .permitAll()
+//                .requestMatchers(
+//                        "/producto/nuevo", "/producto/guardar",
+//                        "/producto/modificar/**", "/producto/eliminar/**",
+//                        "/categoria/nuevo", "/categoria/guardar",
+//                        "/categoria/modificar/**", "/categoria/eliminar/**",
+//                        "/usuario/nuevo", "/usuario/guardar",
+//                        "/usuario/modificar/**", "/usuario/eliminar/**",
+//                        "/reportes/**"
+//                ).hasRole("ADMIN")
+//                .requestMatchers(
+//                        "/producto/listado",
+//                        "/categoria/listado",
+//                        "/usuario/listado"
+//                ).hasAnyRole("ADMIN", "VENDEDOR")
+//                .requestMatchers("/facturar/carrito")
+//                .hasRole("USER")
+//                )
+//                .formLogin((form) -> form
+//                .loginPage("/login").permitAll())
+//                .logout((logout) -> logout.permitAll());
+//        return http.build();
+//    }
+    
+    
+    @Autowired
+    RequestMatcherService requestMatcherService;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // Traer de BD los registros
+        List<RequestMatcher> requestMatchers = requestMatcherService.getAllRequestMatchers();
+
         http
-                .authorizeHttpRequests((request) -> request
-                .requestMatchers("/", "/index", "/errores/**", "/error", "/error/**",
-                        "/carrito/**", "/pruebas/**", "/reportes/**",
-                        "/registro/**", "/js/**", "/webjars/**")
-                .permitAll()
-                .requestMatchers(
-                        "/producto/nuevo", "/producto/guardar",
-                        "/producto/modificar/**", "/producto/eliminar/**",
-                        "/categoria/nuevo", "/categoria/guardar",
-                        "/categoria/modificar/**", "/categoria/eliminar/**",
-                        "/usuario/nuevo", "/usuario/guardar",
-                        "/usuario/modificar/**", "/usuario/eliminar/**",
-                        "/reportes/**"
-                ).hasRole("ADMIN")
-                .requestMatchers(
-                        "/producto/listado",
-                        "/categoria/listado",
-                        "/usuario/listado"
-                ).hasAnyRole("ADMIN", "VENDEDOR")
-                .requestMatchers("/facturar/carrito")
-                .hasRole("USER")
-                )
+                .authorizeHttpRequests((request) -> {
+                    request
+                            .requestMatchers("/", "/index", "/errores/**", "/error", "/error/**",
+                                    "/carrito/**", "/pruebas/**", "/reportes/**",
+                                    "/registro/**", "/js/**", "/css/**", "/webjars/**")
+                            .permitAll();
+
+                    for (RequestMatcher matcher : requestMatchers) {
+                        request
+                                .requestMatchers(matcher.getPattern())
+                                .hasRole(matcher.getRoleName());
+                    }
+                })
                 .formLogin((form) -> form
                 .loginPage("/login").permitAll())
                 .logout((logout) -> logout.permitAll());
+
         return http.build();
+
     }
 
-    
 }
